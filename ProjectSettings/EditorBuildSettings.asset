@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1045 &1
+EditorBuildSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Pure Poly/Free Low Poly Nature Pack/Scenes/Demo_01.unity
+    guid: a2a81125d89710447a9cea4c8a976dd9
+  m_configObjects:
+    com.unity.adaptiveperformance.google.android.provider_settings: {fileID: 11400000,
+      guid: fda60ea4e3ab079478a9ddb680930cd7, type: 2}
+    com.unity.adaptiveperformance.loader_settings: {fileID: 11400000, guid: bc8b42beb9fa8474997284971cd41a84,
+      type: 2}
+    com.unity.adaptiveperformance.samsung.android.provider_settings: {fileID: 11400000,
+      guid: 3b835060f80e6b64781a7934e6ca0e34, type: 2}
+    com.unity.adaptiveperformance.simulator.provider_settings: {fileID: 11400000,
+      guid: 9897b63e6a0b67144a3f7c446299af64, type: 2}
