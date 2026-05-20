@@ -69,103 +69,19 @@
 
 ## 📸 Screenshots
 
-<table width="100%">
-<tr>
-<td align="center" width="50%">
+| 🏠 Main Menu | 🚪 Room List |
+|:---:|:---:|
+| ![Main Menu](docs/images/screenshot-main-menu.png) | ![Room List](docs/images/screenshot-room-list.png) |
 
-### 🏠 Main Menu
+| 🌲 Night Map (Gameplay) | 🎙️ Voice & Chat |
+|:---:|:---:|
+| ![Gameplay NightMap](docs/images/screenshot-gameplay.png) | ![Voice and Chat](docs/images/screenshot-voice-chat.png) |
 
-<!-- Bỏ comment dòng dưới sau khi có ảnh: docs/images/screenshot-main-menu.png -->
-<!--
+### 🖼️ Banner
+
 <p align="center">
-  <img src="docs/images/screenshot-main-menu.png" alt="Main Menu" width="100%" style="max-width: 400px; border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.4);"/>
+  <img src="docs/images/screenshot-banner.png" alt="MidnightChat Banner" width="900"/>
 </p>
--->
-
-<div align="center" style="min-height: 220px; padding: 24px; margin: 8px; border: 2px dashed #6366f1; border-radius: 16px; background: #0f172a; color: #94a3b8;">
-  <p style="font-size: 48px; margin: 0;">🖼️</p>
-  <p><strong>Chèn screenshot Main Menu</strong></p>
-  <p><code>docs/images/screenshot-main-menu.png</code></p>
-  <p style="font-size: 12px;">Gợi ý: màn hình đặt tên, nút Play / Create Room</p>
-</div>
-
-</td>
-<td align="center" width="50%">
-
-### 🚪 Room List
-
-<!-- docs/images/screenshot-room-list.png -->
-<!--
-<p align="center">
-  <img src="docs/images/screenshot-room-list.png" alt="Room List" width="100%" style="max-width: 400px; border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.4);"/>
-</p>
--->
-
-<div align="center" style="min-height: 220px; padding: 24px; margin: 8px; border: 2px dashed #6366f1; border-radius: 16px; background: #0f172a; color: #94a3b8;">
-  <p style="font-size: 48px; margin: 0;">🖼️</p>
-  <p><strong>Chèn screenshot Room List</strong></p>
-  <p><code>docs/images/screenshot-room-list.png</code></p>
-  <p style="font-size: 12px;">Gợi ý: danh sách phòng đang mở</p>
-</div>
-
-</td>
-</tr>
-<tr>
-<td align="center" width="50%">
-
-### 🌲 Night Map (Gameplay)
-
-<!-- docs/images/screenshot-gameplay.png -->
-<!--
-<p align="center">
-  <img src="docs/images/screenshot-gameplay.png" alt="Gameplay NightMap" width="100%" style="max-width: 400px; border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.4);"/>
-</p>
--->
-
-<div align="center" style="min-height: 220px; padding: 24px; margin: 8px; border: 2px dashed #22c55e; border-radius: 16px; background: #0f172a; color: #94a3b8;">
-  <p style="font-size: 48px; margin: 0;">🖼️</p>
-  <p><strong>Chèn screenshot Gameplay</strong></p>
-  <p><code>docs/images/screenshot-gameplay.png</code></p>
-  <p style="font-size: 12px;">Gợi ý: map NightMap, joystick, nhiều người chơi</p>
-</div>
-
-</td>
-<td align="center" width="50%">
-
-### 🎙️ Voice & Chat UI
-
-<!-- docs/images/screenshot-voice-chat.png -->
-<!--
-<p align="center">
-  <img src="docs/images/screenshot-voice-chat.png" alt="Voice and Chat" width="100%" style="max-width: 400px; border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.4);"/>
-</p>
--->
-
-<div align="center" style="min-height: 220px; padding: 24px; margin: 8px; border: 2px dashed #a855f7; border-radius: 16px; background: #0f172a; color: #94a3b8;">
-  <p style="font-size: 48px; margin: 0;">🖼️</p>
-  <p><strong>Chèn screenshot Voice / Chat</strong></p>
-  <p><code>docs/images/screenshot-voice-chat.png</code></p>
-  <p style="font-size: 12px;">Gợi ý: popup voice settings hoặc khung chat</p>
-</div>
-
-</td>
-</tr>
-</table>
-
-### 🖼️ Banner full-width (tuỳ chọn)
-
-<!-- Ảnh ngang rộng — banner quảng cáo / hero -->
-<!--
-<p align="center">
-  <img src="docs/images/screenshot-banner.png" alt="Game Banner" width="100%" style="max-width: 900px; border-radius: 20px; box-shadow: 0 12px 40px rgba(99,102,241,0.35);"/>
-</p>
--->
-
-<div align="center" style="min-height: 120px; padding: 32px; margin-top: 16px; border: 2px dashed #f59e0b; border-radius: 20px; background: linear-gradient(90deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%); color: #cbd5e1;">
-  <p style="font-size: 32px; margin: 0;">🎬</p>
-  <p><strong>Banner hero (tuỳ chọn)</strong></p>
-  <p><code>docs/images/screenshot-banner.png</code> · khuyến nghị ~1200×500 px</p>
-</div>
 
 ---
 
@@ -247,21 +163,6 @@ MidnightChat/
 3. **Player Settings** → Company: `dankchan`, Product: `MidnightChat`.
 
 ---
-
-## 📸 Thêm ảnh vào README (nhanh)
-
-1. Chụp màn hình từ Unity Editor hoặc thiết bị thật.
-2. Copy vào `docs/images/` với đúng tên file (xem bảng Screenshots).
-3. Trong `README.md`, tìm block `<!-- ... -->` tương ứng và **bỏ comment** thẻ `<img>`.
-4. (Tuỳ chọn) Xóa khối `<div>` placeholder màu xám bên dưới mỗi ảnh.
-
-**Ví dụ sau khi có ảnh Main Menu:**
-
-```html
-<p align="center">
-  <img src="docs/images/screenshot-main-menu.png" alt="Main Menu" width="100%" style="max-width: 400px; border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.4);"/>
-</p>
-```
 
 ---
 
