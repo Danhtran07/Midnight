@@ -13,7 +13,7 @@ PlayerSettings:
   useOnDemandResources: 0
   accelerometerFrequency: 60
   companyName: dankchan
-  productName: dank
+  productName: MidnightChat
   defaultCursor: {fileID: 0}
   cursorHotspot: {x: 0, y: 0}
   m_SplashScreenBackgroundColor: {r: 0.13725491, g: 0.12156863, b: 0.1254902, a: 1}
@@ -142,7 +142,10 @@ PlayerSettings:
   visionOSBundleVersion: 1.0
   tvOSBundleVersion: 1.0
   bundleVersion: 1.0.2
-  preloadedAssets: []
+  preloadedAssets:
+  - {fileID: 4161199109918316238, guid: bc8b42beb9fa8474997284971cd41a84, type: 2}
+  - {fileID: 11400000, guid: 3b835060f80e6b64781a7934e6ca0e34, type: 2}
+  - {fileID: 11400000, guid: fda60ea4e3ab079478a9ddb680930cd7, type: 2}
   metroInputSource: 0
   wsaTransparentSwapchain: 0
   m_HolographicPauseOnTrackingLoss: 1
@@ -163,7 +166,7 @@ PlayerSettings:
   androidSupportedAspectRatio: 1
   androidMaxAspectRatio: 2.1
   applicationIdentifier:
-    Android: com.dankchan.dank
+    Android: com.dankchan.midnightchat
   buildNumber:
     Standalone: 0
     VisionOS: 0
@@ -789,14 +792,14 @@ PlayerSettings:
   apiCompatibilityLevelPerPlatform: {}
   m_RenderingPath: 1
   m_MobileRenderingPath: 1
-  metroPackageName: 3dmobile
+  metroPackageName: MidnightChat
   metroPackageVersion: 
   metroCertificatePath: 
   metroCertificatePassword: 
   metroCertificateSubject: 
   metroCertificateIssuer: 
   metroCertificateNotAfter: 0000000000000000
-  metroApplicationDescription: 3dmobile
+  metroApplicationDescription: MidnightChat
   wsaImages: {}
   metroTileShortName: 
   metroTileShowName: 0
