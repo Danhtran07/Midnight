@@ -11,7 +11,7 @@ public class ThirdPersonController : MonoBehaviourPun
     [Header("Movement")]
     public float walkSpeed = 3f;
     public float runSpeed = 6f;
-    public float rotationSpeed = 12f; // smooth hơn (không dùng RotateTowards kiểu cũ)
+    public float rotationSpeed = 12f;
 
     [Header("Smoothing")]
     public float inputSmooth = 8f;
@@ -54,10 +54,13 @@ public class ThirdPersonController : MonoBehaviourPun
         joystick = FindObjectOfType<Joystick>();
 
         GameObject runBtnObj = GameObject.Find("RunButton");
+
         if (runBtnObj != null)
         {
             runButton = runBtnObj.GetComponent<Button>();
+
             runButton.onClick.AddListener(ToggleRun);
+
             runButtonImage = runButton.GetComponent<Image>();
         }
 
@@ -68,10 +71,9 @@ public class ThirdPersonController : MonoBehaviourPun
     void Update()
     {
         if (!photonView.IsMine) return;
-        if (joystick == null || cam == null) return;
+        if (cam == null) return;
 
         Move();
-        HandleGravity();
         HandleAnimation();
     }
 
@@ -80,19 +82,64 @@ public class ThirdPersonController : MonoBehaviourPun
         isRunning = !isRunning;
 
         if (runButtonImage != null)
-            runButtonImage.color = isRunning ? runColor : walkColor;
+        {
+            runButtonImage.color =
+                isRunning ? runColor : walkColor;
+        }
     }
 
     void Move()
     {
-        // 🔥 Smooth input (giảm giật joystick)
-        Vector2 rawInput = new Vector2(joystick.Horizontal, joystick.Vertical);
-        smoothedInput = Vector2.Lerp(smoothedInput, rawInput, Time.deltaTime * inputSmooth);
+        Vector2 rawInput = Vector2.zero;
 
-        Vector3 inputDir = new Vector3(smoothedInput.x, 0, smoothedInput.y);
-        if (inputDir.magnitude < 0.1f) return;
+        // =====================================
+        // MOBILE INPUT
+        // =====================================
+        if (joystick != null)
+        {
+            rawInput = new Vector2(
+                joystick.Horizontal,
+                joystick.Vertical
+            );
+        }
 
-        // camera-relative movement
+        // =====================================
+        // PC TEST INPUT
+        // =====================================
+#if UNITY_EDITOR || UNITY_STANDALONE
+
+        float h = Input.GetAxisRaw("Horizontal");
+        float v = Input.GetAxisRaw("Vertical");
+
+        // chi override khi co bam phim
+        if (Mathf.Abs(h) > 0.01f || Mathf.Abs(v) > 0.01f)
+        {
+            rawInput.x = h;
+            rawInput.y = v;
+        }
+
+        isRunning = Input.GetKey(KeyCode.LeftShift);
+
+#endif
+
+        // =====================================
+        // SMOOTH INPUT
+        // =====================================
+        smoothedInput = Vector2.Lerp(
+            smoothedInput,
+            rawInput,
+            Time.deltaTime * inputSmooth
+        );
+
+        Vector3 inputDir = new Vector3(
+            smoothedInput.x,
+            0,
+            smoothedInput.y
+        );
+
+        // =====================================
+        // CAMERA RELATIVE
+        // =====================================
         Vector3 camForward = cam.forward;
         Vector3 camRight = cam.right;
 
@@ -102,38 +149,67 @@ public class ThirdPersonController : MonoBehaviourPun
         camForward.Normalize();
         camRight.Normalize();
 
-        Vector3 moveDir = camForward * inputDir.z + camRight * inputDir.x;
-        moveDir.Normalize();
+        Vector3 moveDir =
+            camForward * inputDir.z +
+            camRight * inputDir.x;
 
-        float speed = isRunning ? runSpeed : walkSpeed;
+        Vector3 finalMove = Vector3.zero;
 
-        controller.Move(moveDir * speed * Time.deltaTime);
+        // =====================================
+        // MOVE
+        // =====================================
+        if (moveDir.magnitude > 0.1f)
+        {
+            moveDir.Normalize();
 
-        // 🔥 smooth rotation
-        Quaternion targetRot = Quaternion.LookRotation(moveDir);
-        transform.rotation = Quaternion.Slerp(
-            transform.rotation,
-            targetRot,
-            Time.deltaTime * rotationSpeed
-        );
-    }
+            float speed =
+                isRunning ? runSpeed : walkSpeed;
 
-    void HandleGravity()
-    {
+            finalMove = moveDir * speed;
+
+            Quaternion targetRot =
+                Quaternion.LookRotation(moveDir);
+
+            transform.rotation = Quaternion.Slerp(
+                transform.rotation,
+                targetRot,
+                Time.deltaTime * rotationSpeed
+            );
+        }
+
+        // =====================================
+        // GRAVITY
+        // =====================================
         if (controller.isGrounded && velocity.y < 0)
+        {
             velocity.y = -2f;
+        }
 
         velocity.y += gravity * Time.deltaTime;
-        controller.Move(velocity * Time.deltaTime);
+
+        finalMove.y = velocity.y;
+
+        controller.Move(finalMove * Time.deltaTime);
     }
 
     void HandleAnimation()
     {
         if (animator == null) return;
 
-        float move = new Vector2(joystick.Horizontal, joystick.Vertical).magnitude;
-        float blend = move < 0.1f ? 0f : (isRunning ? 1f : 0.5f);
+        float moveAmount = smoothedInput.magnitude;
 
-        animator.SetFloat("Blend", blend);
+        float blend = 0f;
+
+        if (moveAmount > 0.1f)
+        {
+            blend = isRunning ? 1f : 0.5f;
+        }
+
+        animator.SetFloat(
+            "Blend",
+            blend,
+            0.15f,
+            Time.deltaTime
+        );
     }
 }
