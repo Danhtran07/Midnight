@@ -30,6 +30,10 @@ public class ThirdPersonController : MonoBehaviourPun
 
     private bool isRunning = false;
 
+    public bool IsRunning => isRunning;
+    public float MoveInputAmount => smoothedInput.magnitude;
+    public float HorizontalSpeed { get; private set; }
+
     private Transform cam;
 
     private Vector2 smoothedInput;
@@ -154,6 +158,7 @@ public class ThirdPersonController : MonoBehaviourPun
             camRight * inputDir.x;
 
         Vector3 finalMove = Vector3.zero;
+        HorizontalSpeed = 0f;
 
         // =====================================
         // MOVE
@@ -166,6 +171,7 @@ public class ThirdPersonController : MonoBehaviourPun
                 isRunning ? runSpeed : walkSpeed;
 
             finalMove = moveDir * speed;
+            HorizontalSpeed = speed;
 
             Quaternion targetRot =
                 Quaternion.LookRotation(moveDir);
