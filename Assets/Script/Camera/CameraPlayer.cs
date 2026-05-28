@@ -65,7 +65,6 @@ public class CameraFollow : MonoBehaviour
 
                 pitch = Mathf.Clamp(pitch, -20f, 60f);
 
-                // Player xoay theo camera
                 target.rotation = Quaternion.Euler(0, yaw, 0);
             }
         }
