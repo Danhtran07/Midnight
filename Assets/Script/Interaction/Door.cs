@@ -1,81 +1,91 @@
 using UnityEngine;
 using TMPro;
 
+/// <summary>
+/// Cửa tương tác: hiện text khi player vào trigger, mở/đóng bằng phím E.
+/// </summary>
 public class DoorTrigger : MonoBehaviour
 {
+    const string OpenText = "Press To Open";
+    const string CloseText = "Press To Close";
+    const KeyCode InteractKey = KeyCode.E;
+    const string OpenAnimatorBool = "Open";
+
     [Header("Animator")]
     public Animator animator;
 
     [Header("Text tren cua")]
     public TextMeshPro interactText;
 
-    private bool isPlayerNear;
-    private bool isOpen;
+    bool isPlayerNear;
+    bool isOpen;
 
-    private void Start()
+    void Start()
     {
-        if (interactText != null)
-        {
-            interactText.gameObject.SetActive(false);
-        }
+        HideInteractText();
     }
 
-    private void Update()
+    void Update()
     {
-        if (isPlayerNear && Input.GetKeyDown(KeyCode.E))
-        {
-            isOpen = !isOpen;
+        if (!isPlayerNear || !Input.GetKeyDown(InteractKey))
+            return;
 
-            if (animator != null)
-            {
-                animator.SetBool("Open", isOpen);
-            }
-
-            Debug.Log("Trang thai cua: " + isOpen);
-        }
+        ToggleDoor();
     }
 
-    private void OnTriggerEnter(Collider other)
+    void ToggleDoor()
     {
-        if (!IsPlayer(other))
+        isOpen = !isOpen;
+
+        if (animator != null)
+            animator.SetBool(OpenAnimatorBool, isOpen);
+
+        Debug.Log("Trang thai cua: " + isOpen);
+        RefreshInteractText();
+    }
+
+    void OnTriggerEnter(Collider other)
+    {
+        if (!PlayerIdentityUtility.IsPlayer(other))
             return;
 
         Debug.Log("Player vao trigger");
-
         isPlayerNear = true;
-
-        if (interactText != null)
-        {
-            interactText.gameObject.SetActive(true);
-
-            interactText.text = isOpen
-                ? "Press To Close"
-                : "Press To Open";
-        }
+        ShowInteractText();
     }
 
-    private void OnTriggerExit(Collider other)
+    void OnTriggerExit(Collider other)
     {
-        if (!IsPlayer(other))
+        if (!PlayerIdentityUtility.IsPlayer(other))
             return;
 
         Debug.Log("Player roi trigger");
-
         isPlayerNear = false;
-
-        if (interactText != null)
-        {
-            interactText.gameObject.SetActive(false);
-        }
+        HideInteractText();
     }
 
-    static bool IsPlayer(Collider other)
+    void ShowInteractText()
     {
-        if (other.CompareTag("Player"))
-            return true;
+        if (interactText == null)
+            return;
 
-        Transform root = other.transform.root;
+        interactText.gameObject.SetActive(true);
+        RefreshInteractText();
+    }
 
-        return root.CompareTag("Player");
+    void HideInteractText()
+    {
+        if (interactText == null)
+            return;
+
+        interactText.gameObject.SetActive(false);
+    }
+
+    void RefreshInteractText()
+    {
+        if (interactText == null)
+            return;
+
+        interactText.text = isOpen ? CloseText : OpenText;
     }
 }

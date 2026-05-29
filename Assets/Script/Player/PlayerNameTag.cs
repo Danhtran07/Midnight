@@ -9,6 +9,10 @@ using UnityEngine;
 [RequireComponent(typeof(PhotonView))]
 public class PlayerNameTag : MonoBehaviourPun
 {
+    const string DefaultNick = "Player";
+    const string NameTagChildName = "NameTag";
+    const float BillboardMinSqrDist = 0.0001f;
+
     [Header("References — kéo thả từ prefab")]
     [Tooltip("Empty trên đầu model (vd. child NameTag).")]
     public Transform nameTagRoot;
@@ -47,7 +51,7 @@ public class PlayerNameTag : MonoBehaviourPun
     {
         if (nameTagRoot == null)
         {
-            Transform found = transform.Find("NameTag");
+            Transform found = transform.Find(NameTagChildName);
             if (found != null)
                 nameTagRoot = found;
         }
@@ -64,12 +68,15 @@ public class PlayerNameTag : MonoBehaviourPun
         if (nameLabel == null)
             return;
 
-        string nick = photonView.Owner != null ? photonView.Owner.NickName : "Player";
-        if (string.IsNullOrWhiteSpace(nick))
-            nick = "Player";
-
+        string nick = ResolveNickname();
         nameLabel.text = nick;
         nameLabel.color = photonView.IsMine ? localColor : remoteColor;
+    }
+
+    string ResolveNickname()
+    {
+        string nick = photonView.Owner != null ? photonView.Owner.NickName : DefaultNick;
+        return string.IsNullOrWhiteSpace(nick) ? DefaultNick : nick;
     }
 
     void FaceCamera()
@@ -84,17 +91,19 @@ public class PlayerNameTag : MonoBehaviourPun
             return;
 
         if (lockYawOnly)
-        {
-            Vector3 toCam = targetCamera.transform.position - nameTagRoot.position;
-            toCam.y = 0f;
-            if (toCam.sqrMagnitude < 0.0001f)
-                return;
+            FaceCameraYawOnly();
+        else
+            nameTagRoot.rotation = targetCamera.transform.rotation;
+    }
 
-            nameTagRoot.rotation = Quaternion.LookRotation(toCam.normalized, Vector3.up);
+    void FaceCameraYawOnly()
+    {
+        Vector3 toCam = targetCamera.transform.position - nameTagRoot.position;
+        toCam.y = 0f;
+
+        if (toCam.sqrMagnitude < BillboardMinSqrDist)
             return;
-        }
 
-        // Khớp hướng camera → chữ đọc đúng chiều, không bị mirror/ngược
-        nameTagRoot.rotation = targetCamera.transform.rotation;
+        nameTagRoot.rotation = Quaternion.LookRotation(toCam.normalized, Vector3.up);
     }
 }

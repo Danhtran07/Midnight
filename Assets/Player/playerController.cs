@@ -1,10 +1,24 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using Photon.Pun;
 
+/// <summary>
+/// Điều khiển di chuyển third-person cho player local (Photon PUN).
+/// </summary>
 [RequireComponent(typeof(CharacterController))]
 public class ThirdPersonController : MonoBehaviourPun
 {
+    const string LocomotionStateName = "Locomotion";
+    const string BlendParameterName = "Blend";
+    const float MoveInputDeadzone = 0.1f;
+    const float GroundedVelocityY = -2f;
+    const float BlendDampTime = 0.15f;
+    const float WalkBlendValue = 0.5f;
+    const float RunBlendValue = 1f;
+    const float LocalInitDelay = 0.15f;
+    const string RunButtonObjectName = "RunButton";
+
     [Header("Joystick")]
     public Joystick joystick;
 
@@ -21,22 +35,19 @@ public class ThirdPersonController : MonoBehaviourPun
     public Color runColor = Color.green;
     public Color walkColor = Color.white;
 
-    private CharacterController controller;
-    private Animator animator;
-    private Image runButtonImage;
+    CharacterController controller;
+    Animator animator;
+    Image runButtonImage;
+    Transform cam;
 
-    private Vector3 velocity;
-    private float gravity = -9.81f;
-
-    private bool isRunning = false;
+    Vector3 velocity;
+    Vector2 smoothedInput;
+    float gravity = -9.81f;
+    bool isRunning;
 
     public bool IsRunning => isRunning;
     public float MoveInputAmount => smoothedInput.magnitude;
     public float HorizontalSpeed { get; private set; }
-
-    private Transform cam;
-
-    private Vector2 smoothedInput;
 
     void Start()
     {
@@ -44,78 +55,84 @@ public class ThirdPersonController : MonoBehaviourPun
         animator = GetComponentInChildren<Animator>();
 
         if (animator != null)
-            animator.Play("Locomotion", 0, 0f);
+            animator.Play(LocomotionStateName, 0, 0f);
 
-        if (!photonView.IsMine) return;
+        if (!photonView.IsMine)
+            return;
 
         StartCoroutine(InitLocal());
     }
 
-    System.Collections.IEnumerator InitLocal()
-    {
-        yield return new WaitForSeconds(0.15f);
-
-        joystick = FindObjectOfType<Joystick>();
-
-        GameObject runBtnObj = GameObject.Find("RunButton");
-
-        if (runBtnObj != null)
-        {
-            runButton = runBtnObj.GetComponent<Button>();
-
-            runButton.onClick.AddListener(ToggleRun);
-
-            runButtonImage = runButton.GetComponent<Image>();
-        }
-
-        if (Camera.main != null)
-            cam = Camera.main.transform;
-    }
-
     void Update()
     {
-        if (!photonView.IsMine) return;
-        if (cam == null) return;
+        if (!photonView.IsMine || cam == null)
+            return;
 
         Move();
         HandleAnimation();
     }
 
+    IEnumerator InitLocal()
+    {
+        yield return new WaitForSeconds(LocalInitDelay);
+
+        joystick = FindObjectOfType<Joystick>();
+        BindRunButton();
+        cam = Camera.main != null ? Camera.main.transform : null;
+    }
+
+    void BindRunButton()
+    {
+        GameObject runBtnObj = GameObject.Find(RunButtonObjectName);
+        if (runBtnObj == null)
+            return;
+
+        runButton = runBtnObj.GetComponent<Button>();
+        if (runButton == null)
+            return;
+
+        runButton.onClick.AddListener(ToggleRun);
+        runButtonImage = runButton.GetComponent<Image>();
+    }
+
     void ToggleRun()
     {
         isRunning = !isRunning;
+        UpdateRunButtonVisual();
+    }
 
-        if (runButtonImage != null)
-        {
-            runButtonImage.color =
-                isRunning ? runColor : walkColor;
-        }
+    void UpdateRunButtonVisual()
+    {
+        if (runButtonImage == null)
+            return;
+
+        runButtonImage.color = isRunning ? runColor : walkColor;
     }
 
     void Move()
     {
+        Vector2 rawInput = ReadRawInput();
+        smoothedInput = SmoothInput(rawInput);
+
+        Vector3 moveDir = GetCameraRelativeDirection(smoothedInput);
+        Vector3 finalMove = BuildHorizontalMove(moveDir, out float speed);
+        HorizontalSpeed = speed;
+
+        ApplyGravity(ref finalMove);
+        controller.Move(finalMove * Time.deltaTime);
+    }
+
+    Vector2 ReadRawInput()
+    {
         Vector2 rawInput = Vector2.zero;
 
-        // =====================================
-        // MOBILE INPUT
-        // =====================================
         if (joystick != null)
-        {
-            rawInput = new Vector2(
-                joystick.Horizontal,
-                joystick.Vertical
-            );
-        }
+            rawInput = new Vector2(joystick.Horizontal, joystick.Vertical);
 
-        // =====================================
-        // PC TEST INPUT
-        // =====================================
 #if UNITY_EDITOR || UNITY_STANDALONE
-
         float h = Input.GetAxisRaw("Horizontal");
         float v = Input.GetAxisRaw("Vertical");
 
-        // chi override khi co bam phim
         if (Mathf.Abs(h) > 0.01f || Mathf.Abs(v) > 0.01f)
         {
             rawInput.x = h;
@@ -123,99 +140,70 @@ public class ThirdPersonController : MonoBehaviourPun
         }
 
         isRunning = Input.GetKey(KeyCode.LeftShift);
-
 #endif
 
-        // =====================================
-        // SMOOTH INPUT
-        // =====================================
-        smoothedInput = Vector2.Lerp(
+        return rawInput;
+    }
+
+    Vector2 SmoothInput(Vector2 rawInput)
+    {
+        return Vector2.Lerp(
             smoothedInput,
             rawInput,
-            Time.deltaTime * inputSmooth
-        );
+            Time.deltaTime * inputSmooth);
+    }
 
-        Vector3 inputDir = new Vector3(
-            smoothedInput.x,
-            0,
-            smoothedInput.y
-        );
+    Vector3 GetCameraRelativeDirection(Vector2 input)
+    {
+        Vector3 inputDir = new Vector3(input.x, 0f, input.y);
 
-        // =====================================
-        // CAMERA RELATIVE
-        // =====================================
         Vector3 camForward = cam.forward;
         Vector3 camRight = cam.right;
-
-        camForward.y = 0;
-        camRight.y = 0;
-
+        camForward.y = 0f;
+        camRight.y = 0f;
         camForward.Normalize();
         camRight.Normalize();
 
-        Vector3 moveDir =
-            camForward * inputDir.z +
-            camRight * inputDir.x;
+        return camForward * inputDir.z + camRight * inputDir.x;
+    }
 
-        Vector3 finalMove = Vector3.zero;
-        HorizontalSpeed = 0f;
+    Vector3 BuildHorizontalMove(Vector3 moveDir, out float speed)
+    {
+        speed = 0f;
 
-        // =====================================
-        // MOVE
-        // =====================================
-        if (moveDir.magnitude > 0.1f)
-        {
-            moveDir.Normalize();
+        if (moveDir.magnitude <= MoveInputDeadzone)
+            return Vector3.zero;
 
-            float speed =
-                isRunning ? runSpeed : walkSpeed;
+        moveDir.Normalize();
+        speed = isRunning ? runSpeed : walkSpeed;
 
-            finalMove = moveDir * speed;
-            HorizontalSpeed = speed;
+        Quaternion targetRot = Quaternion.LookRotation(moveDir);
+        transform.rotation = Quaternion.Slerp(
+            transform.rotation,
+            targetRot,
+            Time.deltaTime * rotationSpeed);
 
-            Quaternion targetRot =
-                Quaternion.LookRotation(moveDir);
+        return moveDir * speed;
+    }
 
-            transform.rotation = Quaternion.Slerp(
-                transform.rotation,
-                targetRot,
-                Time.deltaTime * rotationSpeed
-            );
-        }
-
-        // =====================================
-        // GRAVITY
-        // =====================================
-        if (controller.isGrounded && velocity.y < 0)
-        {
-            velocity.y = -2f;
-        }
+    void ApplyGravity(ref Vector3 finalMove)
+    {
+        if (controller.isGrounded && velocity.y < 0f)
+            velocity.y = GroundedVelocityY;
 
         velocity.y += gravity * Time.deltaTime;
-
         finalMove.y = velocity.y;
-
-        controller.Move(finalMove * Time.deltaTime);
     }
 
     void HandleAnimation()
     {
-        if (animator == null) return;
-
-        float moveAmount = smoothedInput.magnitude;
+        if (animator == null)
+            return;
 
         float blend = 0f;
+        if (smoothedInput.magnitude > MoveInputDeadzone)
+            blend = isRunning ? RunBlendValue : WalkBlendValue;
 
-        if (moveAmount > 0.1f)
-        {
-            blend = isRunning ? 1f : 0.5f;
-        }
-
-        animator.SetFloat(
-            "Blend",
-            blend,
-            0.15f,
-            Time.deltaTime
-        );
+        animator.SetFloat(BlendParameterName, blend, BlendDampTime, Time.deltaTime);
     }
 }

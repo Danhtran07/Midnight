@@ -7,6 +7,10 @@ using Photon.Pun;
 [RequireComponent(typeof(CharacterController))]
 public class PlayerFootstep : MonoBehaviourPun
 {
+    const float FootHeightEpsilon = 0.0008f;
+    const float PitchMin = 0.94f;
+    const float PitchMax = 1.06f;
+
     [Header("Clips")]
     public AudioClip[] walkClips;
     public AudioClip[] runClips;
@@ -34,11 +38,10 @@ public class PlayerFootstep : MonoBehaviourPun
 
     CharacterController controller;
     ThirdPersonController movement;
-    Animator animator;
     AudioSource footstepSource;
 
-    FootCycleTracker leftFootTracker = new FootCycleTracker();
-    FootCycleTracker rightFootTracker = new FootCycleTracker();
+    readonly FootCycleTracker leftFootTracker = new FootCycleTracker();
+    readonly FootCycleTracker rightFootTracker = new FootCycleTracker();
 
     float lastStepTime = -999f;
     float fallbackDistance;
@@ -57,8 +60,7 @@ public class PlayerFootstep : MonoBehaviourPun
     {
         controller = GetComponent<CharacterController>();
         movement = GetComponent<ThirdPersonController>();
-        animator = GetComponentInChildren<Animator>();
-        footstepSource = EnsureFootstepAudioSource();
+        footstepSource = FootstepAudioUtility.GetOrCreate(transform);
         lastBodyPosition = transform.position;
     }
 
@@ -70,90 +72,60 @@ public class PlayerFootstep : MonoBehaviourPun
 
     void Update()
     {
-        if (photonView != null && !photonView.IsMine)
+        if (!IsLocalPlayer())
             return;
 
         if (!CanPlayFootsteps(out bool running))
         {
-            ResetTrackers();
-            fallbackDistance = 0f;
-            lastBodyPosition = transform.position;
+            OnMovementStopped();
             return;
         }
 
         if (useBoneDetection)
-        {
-            UpdateFootStrike(leftFoot, leftFootTracker, running);
-            UpdateFootStrike(rightFoot, rightFootTracker, running);
-        }
+            UpdateBoneFootsteps(running);
         else
-        {
-            UpdateDistanceFallback(running);
-        }
+            UpdateDistanceFootsteps(running);
 
+        lastBodyPosition = transform.position;
+    }
+
+    bool IsLocalPlayer()
+    {
+        return photonView == null || photonView.IsMine;
+    }
+
+    void OnMovementStopped()
+    {
+        ResetTrackers();
+        fallbackDistance = 0f;
         lastBodyPosition = transform.position;
     }
 
     void CacheFootBones()
     {
-        if (hips == null)
-            hips = FindBone("mixamorig:Hips") ?? FindBone("Hips");
+        Animator animator = GetComponentInChildren<Animator>();
+        HumanoidBoneUtility.FootBones bones = HumanoidBoneUtility.Resolve(
+            animator, transform, leftFoot, rightFoot, hips);
 
-        if (animator != null)
-        {
-            if (leftFoot == null && animator.isHuman)
-                leftFoot = animator.GetBoneTransform(HumanBodyBones.LeftFoot);
-            if (rightFoot == null && animator.isHuman)
-                rightFoot = animator.GetBoneTransform(HumanBodyBones.RightFoot);
-            if (hips == null && animator.isHuman)
-                hips = animator.GetBoneTransform(HumanBodyBones.Hips);
-        }
-
-        if (leftFoot == null)
-            leftFoot = FindBone("mixamorig:LeftFoot") ?? FindBone("LeftFoot");
-        if (rightFoot == null)
-            rightFoot = FindBone("mixamorig:RightFoot") ?? FindBone("RightFoot");
-    }
-
-    Transform FindBone(string boneName)
-    {
-        Transform[] children = GetComponentsInChildren<Transform>(true);
-        for (int i = 0; i < children.Length; i++)
-        {
-            if (children[i].name == boneName)
-                return children[i];
-        }
-        return null;
+        leftFoot = bones.LeftFoot;
+        rightFoot = bones.RightFoot;
+        hips = bones.Hips;
     }
 
     bool CanPlayFootsteps(out bool running)
     {
         running = movement != null && movement.IsRunning;
 
-        if (!IsGrounded())
+        if (!CharacterGroundCheck.IsGrounded(controller, transform))
             return false;
 
-        float speed = GetHorizontalSpeed();
-        if (speed < minMoveSpeed)
+        if (GetHorizontalSpeed() < minMoveSpeed)
             return false;
 
         if (movement != null && movement.MoveInputAmount < minMoveInput)
             return false;
 
         return true;
-    }
-
-    bool IsGrounded()
-    {
-        if (controller.isGrounded)
-            return true;
-
-        return Physics.Raycast(
-            transform.position + Vector3.up * 0.1f,
-            Vector3.down,
-            controller.height * 0.55f + 0.2f,
-            Physics.DefaultRaycastLayers,
-            QueryTriggerInteraction.Ignore);
     }
 
     float GetHorizontalSpeed()
@@ -165,10 +137,16 @@ public class PlayerFootstep : MonoBehaviourPun
         return new Vector3(vel.x, 0f, vel.z).magnitude;
     }
 
+    void UpdateBoneFootsteps(bool running)
+    {
+        UpdateFootStrike(leftFoot, leftFootTracker, running);
+        UpdateFootStrike(rightFoot, rightFootTracker, running);
+    }
+
     void UpdateFootStrike(Transform foot, FootCycleTracker tracker, bool running)
     {
         float height = foot.position.y - hips.position.y;
-        bool goingDown = height < tracker.PrevHeight - 0.0008f;
+        bool goingDown = height < tracker.PrevHeight - FootHeightEpsilon;
 
         if (!tracker.Initialized)
         {
@@ -178,7 +156,6 @@ public class PlayerFootstep : MonoBehaviourPun
             return;
         }
 
-        // Chân vừa chạm đất: đang hạ xuống → bắt đầu nhấc lên (điểm cực tiểu theo trục Y)
         if (tracker.WasGoingDown && !goingDown)
             TryPlayStep(running);
 
@@ -186,7 +163,7 @@ public class PlayerFootstep : MonoBehaviourPun
         tracker.WasGoingDown = goingDown;
     }
 
-    void UpdateDistanceFallback(bool running)
+    void UpdateDistanceFootsteps(bool running)
     {
         Vector3 delta = transform.position - lastBodyPosition;
         delta.y = 0f;
@@ -220,63 +197,47 @@ public class PlayerFootstep : MonoBehaviourPun
     /// <summary>Gọi từ Animation Event trên clip walk/run nếu cần sync tuyệt đối.</summary>
     public void OnFootstepAnimationEvent()
     {
-        if (photonView != null && !photonView.IsMine)
+        if (!IsLocalPlayer())
             return;
 
-        bool running = movement != null && movement.IsRunning;
-        if (!CanPlayFootsteps(out _))
+        if (!CanPlayFootsteps(out bool running))
             return;
 
         TryPlayStep(running);
     }
 
-    AudioSource EnsureFootstepAudioSource()
-    {
-        Transform child = transform.Find("FootstepAudio");
-        if (child != null)
-        {
-            AudioSource existing = child.GetComponent<AudioSource>();
-            if (existing != null)
-                return Configure(existing);
-        }
-
-        var go = new GameObject("FootstepAudio");
-        go.transform.SetParent(transform, false);
-        return Configure(go.AddComponent<AudioSource>());
-    }
-
-    static AudioSource Configure(AudioSource source)
-    {
-        source.playOnAwake = false;
-        source.loop = false;
-        source.spatialBlend = 0f;
-        source.mute = false;
-        return source;
-    }
-
     void PlayStep(bool running)
     {
-        AudioClip[] clips = running ? runClips : walkClips;
+        AudioClip[] clips = ResolveClips(running);
         if (clips == null || clips.Length == 0)
-        {
-            clips = walkClips;
-            if (clips == null || clips.Length == 0)
-            {
-                if (!warnedNoClips)
-                {
-                    Debug.LogWarning("[PlayerFootstep] Gán AudioClip vào Walk Clips / Run Clips.", this);
-                    warnedNoClips = true;
-                }
-                return;
-            }
-        }
+            return;
 
         AudioClip clip = clips[Random.Range(0, clips.Length)];
         if (clip == null)
             return;
 
         footstepSource.volume = volume;
-        footstepSource.pitch = Random.Range(0.94f, 1.06f);
+        footstepSource.pitch = Random.Range(PitchMin, PitchMax);
         footstepSource.PlayOneShot(clip);
+    }
+
+    AudioClip[] ResolveClips(bool running)
+    {
+        AudioClip[] clips = running ? runClips : walkClips;
+
+        if (clips == null || clips.Length == 0)
+            clips = walkClips;
+
+        if (clips == null || clips.Length == 0)
+        {
+            if (!warnedNoClips)
+            {
+                Debug.LogWarning("[PlayerFootstep] Gán AudioClip vào Walk Clips / Run Clips.", this);
+                warnedNoClips = true;
+            }
+            return null;
+        }
+
+        return clips;
     }
 }

@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 /// <summary>
-/// Spawns the local player prefab when entering NightMap (each client spawns its own).
+/// Spawn player prefab khi vào NightMap (mỗi client spawn player của mình).
 /// </summary>
 public class GameManager : MonoBehaviourPunCallbacks
 {
@@ -26,6 +26,7 @@ public class GameManager : MonoBehaviourPunCallbacks
             Destroy(gameObject);
             return;
         }
+
         Instance = this;
     }
 
@@ -37,7 +38,7 @@ public class GameManager : MonoBehaviourPunCallbacks
 
     void Start()
     {
-        Debug.Log("[GameManager] Start — InRoom=" + PhotonNetwork.InRoom + " Scene=" + SceneManager.GetActiveScene().name);
+        LogStartContext();
         StartCoroutine(SpawnWhenReady());
     }
 
@@ -51,6 +52,12 @@ public class GameManager : MonoBehaviourPunCallbacks
     {
         playerSpawned = false;
         Debug.Log("[GameManager] OnLeftRoom — reset spawn flag.");
+    }
+
+    void LogStartContext()
+    {
+        Debug.Log("[GameManager] Start — InRoom=" + PhotonNetwork.InRoom +
+                  " Scene=" + SceneManager.GetActiveScene().name);
     }
 
     IEnumerator SpawnWhenReady()
@@ -74,7 +81,7 @@ public class GameManager : MonoBehaviourPunCallbacks
         if (playerSpawned)
             return true;
 
-        if (!PhotonNetwork.IsConnectedAndReady || !PhotonNetwork.InRoom)
+        if (!CanSpawnNow())
             return false;
 
         if (HasLocalPlayerAlready())
@@ -84,20 +91,36 @@ public class GameManager : MonoBehaviourPunCallbacks
             return true;
         }
 
+        Transform spawn = PickRandomSpawnPoint();
+        if (spawn == null)
+            return false;
+
+        return InstantiateLocalPlayer(spawn);
+    }
+
+    bool CanSpawnNow()
+    {
+        return PhotonNetwork.IsConnectedAndReady && PhotonNetwork.InRoom;
+    }
+
+    Transform PickRandomSpawnPoint()
+    {
         if (spawnPoints == null || spawnPoints.Length == 0)
         {
             Debug.LogError("[GameManager] No spawn points assigned!");
-            return false;
+            return null;
         }
 
         int index = Random.Range(0, spawnPoints.Length);
-        Transform spawn = spawnPoints[index];
+        return spawnPoints[index];
+    }
 
+    bool InstantiateLocalPlayer(Transform spawn)
+    {
         GameObject player = PhotonNetwork.Instantiate(
             playerPrefabName,
             spawn.position,
-            spawn.rotation
-        );
+            spawn.rotation);
 
         if (player == null)
         {
@@ -106,7 +129,8 @@ public class GameManager : MonoBehaviourPunCallbacks
         }
 
         playerSpawned = true;
-        Debug.Log("[GameManager] Local player spawned: " + player.name + " Actor=" + PhotonNetwork.LocalPlayer.ActorNumber);
+        Debug.Log("[GameManager] Local player spawned: " + player.name +
+                  " Actor=" + PhotonNetwork.LocalPlayer.ActorNumber);
         return true;
     }
 

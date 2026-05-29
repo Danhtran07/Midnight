@@ -1,10 +1,16 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 
+/// <summary>
+/// Kiểm tra touch/pointer có đang trên UI hay không.
+/// </summary>
 public class TouchManager : MonoBehaviour
 {
     public static bool IsPointerOverUI()
     {
+        if (EventSystem.current == null)
+            return false;
+
 #if UNITY_EDITOR
         return EventSystem.current.IsPointerOverGameObject();
 #elif UNITY_ANDROID || UNITY_IOS
