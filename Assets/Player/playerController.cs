@@ -44,20 +44,24 @@ public class ThirdPersonController : MonoBehaviourPun
     Vector2 smoothedInput;
     float gravity = -9.81f;
     bool isRunning;
+    bool keyboardRunHeld;
 
-    public bool IsRunning => isRunning;
+    public bool IsRunning => isRunning || keyboardRunHeld;
     public float MoveInputAmount => smoothedInput.magnitude;
     public float HorizontalSpeed { get; private set; }
 
-    void Start()
+    void Awake()
     {
         controller = GetComponent<CharacterController>();
         animator = GetComponentInChildren<Animator>();
+    }
 
+    void Start()
+    {
         if (animator != null)
             animator.Play(LocomotionStateName, 0, 0f);
 
-        if (!photonView.IsMine)
+        if (!IsLocalPlayer())
             return;
 
         StartCoroutine(InitLocal());
@@ -65,7 +69,7 @@ public class ThirdPersonController : MonoBehaviourPun
 
     void Update()
     {
-        if (!photonView.IsMine || cam == null)
+        if (!IsLocalPlayer() || cam == null)
             return;
 
         Move();
@@ -77,41 +81,59 @@ public class ThirdPersonController : MonoBehaviourPun
         yield return new WaitForSeconds(LocalInitDelay);
 
         joystick = FindObjectOfType<Joystick>();
-        BindRunButton();
+        CacheCamera();
+        BindRunButtonIfNeeded();
+    }
+
+    bool IsLocalPlayer()
+    {
+        return photonView == null || photonView.IsMine;
+    }
+
+    void CacheCamera()
+    {
         cam = Camera.main != null ? Camera.main.transform : null;
+        if (cam == null)
+            Debug.LogWarning("[ThirdPersonController] Main Camera not found.", this);
     }
 
-    void BindRunButton()
+    void BindRunButtonIfNeeded()
     {
-        GameObject runBtnObj = GameObject.Find(RunButtonObjectName);
-        if (runBtnObj == null)
-            return;
-
-        runButton = runBtnObj.GetComponent<Button>();
         if (runButton == null)
-            return;
+            runButton = RunButtonUtility.FindButton(RunButtonObjectName);
 
-        runButton.onClick.AddListener(ToggleRun);
-        runButtonImage = runButton.GetComponent<Image>();
+        runButtonImage = RunButtonUtility.Bind(runButton, ToggleRun);
+        UpdateRunButtonVisual();
     }
 
-    void ToggleRun()
+    public void ToggleRun()
     {
-        isRunning = !isRunning;
+        SetRunning(!isRunning);
+    }
+
+    void SetRunning(bool running)
+    {
+        if (isRunning == running)
+            return;
+
+        isRunning = running;
         UpdateRunButtonVisual();
     }
 
     void UpdateRunButtonVisual()
     {
-        if (runButtonImage == null)
-            return;
-
-        runButtonImage.color = isRunning ? runColor : walkColor;
+        RunButtonUtility.ApplyColor(runButtonImage, IsRunning, runColor, walkColor);
     }
 
     void Move()
     {
-        Vector2 rawInput = ReadRawInput();
+        Vector2 rawInput = PlayerInputReader.ReadMoveInput(joystick);
+        bool hadKeyboardRun = keyboardRunHeld;
+        keyboardRunHeld = PlayerInputReader.TryReadKeyboardRun(out bool isKeyboardRunHeld) && isKeyboardRunHeld;
+
+        if (hadKeyboardRun != keyboardRunHeld)
+            UpdateRunButtonVisual();
+
         smoothedInput = SmoothInput(rawInput);
 
         Vector3 moveDir = GetCameraRelativeDirection(smoothedInput);
@@ -120,29 +142,6 @@ public class ThirdPersonController : MonoBehaviourPun
 
         ApplyGravity(ref finalMove);
         controller.Move(finalMove * Time.deltaTime);
-    }
-
-    Vector2 ReadRawInput()
-    {
-        Vector2 rawInput = Vector2.zero;
-
-        if (joystick != null)
-            rawInput = new Vector2(joystick.Horizontal, joystick.Vertical);
-
-#if UNITY_EDITOR || UNITY_STANDALONE
-        float h = Input.GetAxisRaw("Horizontal");
-        float v = Input.GetAxisRaw("Vertical");
-
-        if (Mathf.Abs(h) > 0.01f || Mathf.Abs(v) > 0.01f)
-        {
-            rawInput.x = h;
-            rawInput.y = v;
-        }
-
-        isRunning = Input.GetKey(KeyCode.LeftShift);
-#endif
-
-        return rawInput;
     }
 
     Vector2 SmoothInput(Vector2 rawInput)
@@ -175,7 +174,7 @@ public class ThirdPersonController : MonoBehaviourPun
             return Vector3.zero;
 
         moveDir.Normalize();
-        speed = isRunning ? runSpeed : walkSpeed;
+        speed = IsRunning ? runSpeed : walkSpeed;
 
         Quaternion targetRot = Quaternion.LookRotation(moveDir);
         transform.rotation = Quaternion.Slerp(
@@ -202,7 +201,7 @@ public class ThirdPersonController : MonoBehaviourPun
 
         float blend = 0f;
         if (smoothedInput.magnitude > MoveInputDeadzone)
-            blend = isRunning ? RunBlendValue : WalkBlendValue;
+            blend = IsRunning ? RunBlendValue : WalkBlendValue;
 
         animator.SetFloat(BlendParameterName, blend, BlendDampTime, Time.deltaTime);
     }

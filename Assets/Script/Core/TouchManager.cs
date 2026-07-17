@@ -4,7 +4,7 @@ using UnityEngine.EventSystems;
 /// <summary>
 /// Kiểm tra touch/pointer có đang trên UI hay không.
 /// </summary>
-public class TouchManager : MonoBehaviour
+public static class TouchManager
 {
     public static bool IsPointerOverUI()
     {

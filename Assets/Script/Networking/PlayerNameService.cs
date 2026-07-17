@@ -46,7 +46,7 @@ public static class PlayerNameService
 
         if (string.IsNullOrWhiteSpace(name))
         {
-            error = "Vui lòng nhập tên.";
+            error = "Please enter a display name!.";
             return false;
         }
 
@@ -54,13 +54,13 @@ public static class PlayerNameService
 
         if (trimmed.Length < MinLength)
         {
-            error = $"Tên tối thiểu {MinLength} ký tự.";
+            error = $"Name must be at least {MinLength} characters long.";
             return false;
         }
 
         if (trimmed.Length > MaxLength)
         {
-            error = $"Tên tối đa {MaxLength} ký tự.";
+            error = $"Name must be at most {MaxLength} characters long.";
             return false;
         }
 

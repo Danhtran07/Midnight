@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 /// <summary>
@@ -6,7 +7,9 @@ using UnityEngine.UI;
 /// </summary>
 public class RunButtonController : MonoBehaviour
 {
-    public RunButtonController playerController;
+    [FormerlySerializedAs("playerController")]
+    public ThirdPersonController targetController;
+
     public Image buttonImage;
     public Color runColor = Color.green;
     public Color walkColor = Color.white;
@@ -16,7 +19,10 @@ public class RunButtonController : MonoBehaviour
     public void OnClickToggleRun()
     {
         isRunning = !isRunning;
-        playerController.ToggleRun();
+
+        if (targetController != null)
+            targetController.ToggleRun();
+
         ApplyButtonColor();
     }
 
