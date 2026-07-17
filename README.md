@@ -83,6 +83,12 @@
   <img src="docs/images/screenshot-banner.png" alt="MidnightChat Banner" width="900"/>
 </p>
 
+
+## 🎥 Demo Video
+
+[![Watch the Demo](https://img.youtube.com/vi/DQCeELvtVCk/maxresdefault.jpg)](https://www.youtube.com/watch?v=DQCeELvtVCk)
+
+👉 Nhấn vào hình để xem demo trên YouTube.
 ---
 
 ## 🗺️ Luồng scene
