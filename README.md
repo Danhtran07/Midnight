@@ -1,12 +1,8 @@
-<!-- README styled with HTML + inline CSS (GitHub supports inline styles on most elements) -->
+# MidnightChat
 
 <div align="center">
 
-# 🌙 MidnightChat
-
-<p>
-  <strong>Trò chuyện & khám phá đêm</strong> · Unity · Photon PUN · Voice & Chat · Multiplayer mobile
-</p>
+<strong>Nighttime Chat and Exploration</strong> · Unity · Photon PUN · Voice & Chat · Mobile Multiplayer
 
 <p>
   <img src="https://img.shields.io/badge/Unity-2022.3.62f2-000000?style=for-the-badge&logo=unity&logoColor=white" alt="Unity"/>
@@ -20,46 +16,50 @@
 
 ---
 
-## 📖 Giới thiệu
+## Introduction
 
-**MidnightChat** là game 3D trên mobile — gặp gỡ, trò chuyện và khám phá map đêm **NightMap** cùng bạn bè. Đặt tên, tạo hoặc tham gia phòng multiplayer qua Photon, dùng **voice chat**, **chat phòng** và điều khiển joystick trên màn hình cảm ứng.
+**MidnightChat** is a 3D mobile multiplayer game where players can meet, chat, and explore the nighttime **NightMap** with friends. Players can set their name, create or join multiplayer rooms through Photon, use **voice chat** and **room chat**, and control their character using an on-screen joystick.
 
 <table>
 <tr>
-<td width="50%" valign="top" style="padding: 16px; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius: 12px;">
+<td width="50%" valign="top">
 
-### 🎮 Gameplay
-- Di chuyển 3D với joystick
-- Camera theo nhân vật
-- Âm thanh bước chân (footstep)
-- Map đêm với môi trường stylized
+### Gameplay
+
+* 3D movement with a joystick
+* Third-person camera following the character
+* Footstep sounds
+* Stylized nighttime environment
 
 </td>
-<td width="50%" valign="top" style="padding: 16px; background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%); border-radius: 12px;">
+<td width="50%" valign="top">
 
-### 🌐 Multiplayer
-- Kết nối Photon tự động
-- Tạo / tham gia phòng (tối đa 10 người)
-- Danh sách phòng realtime
-- Đồng bộ scene giữa các client
+### Multiplayer
+
+* Automatic Photon connection
+* Create and join rooms with up to 10 players
+* Real-time room list
+* Scene synchronization between clients
 
 </td>
 </tr>
 <tr>
-<td width="50%" valign="top" style="padding: 16px; background: linear-gradient(135deg, #16213e 0%, #1a1a2e 100%); border-radius: 12px;">
+<td width="50%" valign="top">
 
-### 🎙️ Voice & Chat
-- Voice chat qua Photon Voice
-- Cài đặt âm lượng / mic trong game
-- Chat text trong phòng
+### Voice and Chat
+
+* Voice chat through Photon Voice
+* In-game volume and microphone settings
+* Text chat inside rooms
 
 </td>
-<td width="50%" valign="top" style="padding: 16px; background: linear-gradient(135deg, #0f3460 0%, #533483 100%); border-radius: 12px;">
+<td width="50%" valign="top">
 
-### 📱 Mobile
-- Adaptive Performance (Samsung / Google)
-- UI tối ưu cảm ứng
-- Hướng màn hình landscape
+### Mobile
+
+* Adaptive Performance for Samsung and Google devices
+* Touch-optimized UI
+* Landscape screen orientation
 
 </td>
 </tr>
@@ -67,31 +67,31 @@
 
 ---
 
-## 📸 Screenshots
+## Screenshots
 
-| 🏠 Main Menu | 🚪 Room List |
-|:---:|:---:|
+|                      Main Menu                     |                      Room List                     |
+| :------------------------------------------------: | :------------------------------------------------: |
 | ![Main Menu](docs/images/screenshot-main-menu.png) | ![Room List](docs/images/screenshot-room-list.png) |
 
-| 🌲 Night Map (Gameplay) | 🎙️ Voice & Chat |
-|:---:|:---:|
+|                     Night Map Gameplay                    |                      Voice and Chat                      |
+| :-------------------------------------------------------: | :------------------------------------------------------: |
 | ![Gameplay NightMap](docs/images/screenshot-gameplay.png) | ![Voice and Chat](docs/images/screenshot-voice-chat.png) |
 
-### 🖼️ Banner
+### Banner
 
 <p align="center">
   <img src="docs/images/screenshot-banner.png" alt="MidnightChat Banner" width="900"/>
 </p>
 
-
-## 🎥 Demo Video
+## Demo Video
 
 [![Watch the Demo](https://img.youtube.com/vi/DQCeELvtVCk/maxresdefault.jpg)](https://www.youtube.com/watch?v=DQCeELvtVCk)
 
-👉 Nhấn vào hình để xem demo trên YouTube.
+Click the image above to watch the demo on YouTube.
+
 ---
 
-## 🗺️ Luồng scene
+## Scene Flow
 
 ```mermaid
 flowchart LR
@@ -101,104 +101,106 @@ flowchart LR
     C --> D
 ```
 
-| Scene | Mô tả |
-|-------|--------|
-| `MainMenu` | Menu chính, kết nối Photon, đặt tên người chơi |
-| `CreateRoomScene` | Tạo phòng mới |
-| `RoomListScene` | Xem và tham gia phòng có sẵn |
-| `NightMap` | Map chơi chính — spawn player, voice, chat |
+| Scene             | Description                                                         |
+| ----------------- | ------------------------------------------------------------------- |
+| `MainMenu`        | Main menu, Photon connection, and player name setup                 |
+| `CreateRoomScene` | Create a new multiplayer room                                       |
+| `RoomListScene`   | View and join available rooms                                       |
+| `NightMap`        | Main gameplay scene with player spawning, voice chat, and room chat |
 
 ---
 
-## 🛠️ Công nghệ
+## Technologies
 
-| Thành phần | Chi tiết |
-|------------|----------|
-| **Engine** | Unity `2022.3.62f2` |
-| **Template** | Mobile 3D + Adaptive Performance |
-| **Multiplayer** | Photon PUN 2 |
-| **Voice** | Photon Voice |
-| **UI** | TextMesh Pro, UGUI |
-| **Điều khiển** | Joystick Pack, First Person Controller (modular) |
+| Component       | Details                                          |
+| --------------- | ------------------------------------------------ |
+| **Engine**      | Unity `2022.3.62f2`                              |
+| **Template**    | Mobile 3D + Adaptive Performance                 |
+| **Multiplayer** | Photon PUN 2                                     |
+| **Voice**       | Photon Voice                                     |
+| **UI**          | TextMesh Pro, UGUI                               |
+| **Controls**    | Joystick Pack, First Person Controller (modular) |
 
 ---
 
-## 📁 Cấu trúc thư mục chính
+## Project Structure
 
-```
+```text
 MidnightChat/
 ├── Assets/
 │   ├── Scenes/              # MainMenu, CreateRoom, RoomList, NightMap
 │   ├── Script/
-│   │   ├── Networking/      # Launcher, GameManager, Room list, Chat
+│   │   ├── Networking/      # Launcher, GameManager, room list, chat
 │   │   ├── Player/          # Setup, name tag, footstep
 │   │   ├── Voice/           # VoiceManager, PlayerVoice, settings UI
 │   │   └── Camera/
-│   └── Photon/              # PUN + Voice SDK
+│   └── Photon/               # PUN + Voice SDK
 ├── docs/
-│   └── images/              # ← Đặt screenshot tại đây
+│   └── images/              # Screenshots
 ├── ProjectSettings/
 └── README.md
 ```
 
 ---
 
-## 🚀 Cài đặt & chạy
+## Installation and Setup
 
-### Yêu cầu
+### Requirements
 
-- [Unity Hub](https://unity.com/download) với editor **2022.3.62f2** (hoặc tương thích 2022.3 LTS)
-- Tài khoản [Photon](https://www.photonengine.com/) — App ID PUN (và Voice nếu dùng voice)
-- Android SDK / Xcode (khi build mobile)
+* [Unity Hub](https://unity.com/download) with **Unity 2022.3.62f2** or another compatible 2022.3 LTS version
+* [Photon](https://www.photonengine.com/) account with a PUN App ID and Voice App ID if voice chat is enabled
+* Android SDK / Xcode for mobile builds
 
-### Các bước
+### Setup
 
-1. **Clone** repository:
+1. **Clone the repository:**
+
    ```bash
    git clone https://github.com/YOUR_USERNAME/MidnightChat.git
    cd MidnightChat
    ```
-2. Mở project bằng **Unity Hub** → Add → chọn thư mục `MidnightChat`.
-3. Cấu hình **Photon App ID** trong Photon dashboard và gán vào `PhotonServerSettings` (Assets/Photon/...).
-4. Mở scene `Assets/Scenes/MainMenu.unity` và nhấn **Play**, hoặc build **File → Build Settings** cho Android/iOS.
 
-### Build mobile
+2. Open the project in **Unity Hub** → Add → select the `MidnightChat` folder.
 
-1. `File → Build Settings` → chọn **Android** hoặc **iOS**.
-2. Đảm bảo 4 scene trong **Scenes In Build** (đã cấu hình sẵn).
-3. **Player Settings** → Company: `dankchan`, Product: `MidnightChat`.
+3. Configure the **Photon App ID** in the Photon dashboard and assign it to `PhotonServerSettings` under `Assets/Photon/...`.
 
----
+4. Open `Assets/Scenes/MainMenu.unity` and press **Play**, or build the project through **File → Build Settings** for Android or iOS.
 
----
+### Mobile Build
 
-## 📜 Scripts chính
+1. Go to `File → Build Settings` and select **Android** or **iOS**.
+2. Make sure all four scenes are included in **Scenes In Build**.
+3. Open **Player Settings** and configure:
 
-| Script | Vai trò |
-|--------|---------|
-| `Launcher.cs` | Singleton Photon — connect, lobby, tạo/join phòng, sync scene |
-| `GameManager.cs` | Spawn player local khi vào `NightMap` |
-| `CreateRoomManager.cs` | UI/logic tạo phòng |
-| `RoomListUI.cs` | Hiển thị danh sách phòng |
-| `RoomChatManager.cs` | Chat trong phòng |
-| `VoiceManager.cs` | Quản lý voice toàn cục |
-| `PlayerVoice.cs` | Voice từng người chơi |
+   * Company: `dankchan`
+   * Product: `MidnightChat`
 
 ---
 
-## 🤝 Đóng góp
+## Main Scripts
 
-Pull request và issue luôn được chào đón. Vui lòng mô tả rõ bug hoặc tính năng kèm scene / bước tái hiện.
+| Script                 | Role                                                                                                 |
+| ---------------------- | ---------------------------------------------------------------------------------------------------- |
+| `Launcher.cs`          | Photon singleton responsible for connection, lobby, room creation/joining, and scene synchronization |
+| `GameManager.cs`       | Spawns the local player when entering `NightMap`                                                     |
+| `CreateRoomManager.cs` | Handles room creation UI and logic                                                                   |
+| `RoomListUI.cs`        | Displays the available room list                                                                     |
+| `RoomChatManager.cs`   | Handles room text chat                                                                               |
+| `VoiceManager.cs`      | Manages global voice functionality                                                                   |
+| `PlayerVoice.cs`       | Handles voice functionality for individual players                                                   |
 
 ---
 
+## Contributing
+
+Pull requests and issues are welcome. Please provide a clear description of the bug or feature request, along with the relevant scene and reproduction steps when applicable.
 
 ---
 
 <div align="center">
 
-<p style="color: #64748b; font-size: 14px;">
-  Made with Unity · Photon · ❤️ <strong>MidnightChat</strong>
+<p>
+  Made with Unity · Photon · <strong>MidnightChat</strong>
 </p>
 
 <p>
